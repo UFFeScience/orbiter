@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: datalake-tables-generator-
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+spec:
+  template:
+    spec:
+      containers:
+        - name: datalake-tables-generator
+          image: jpedroloureiro/datalake_tables_generator:0.0.8
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 150m
+            limits:
+              memory: 100Mi
+              cpu: 150m
+      restartPolicy: Never

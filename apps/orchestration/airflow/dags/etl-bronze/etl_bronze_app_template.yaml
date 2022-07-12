@@ -1,0 +1,39 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: "{{app_table_name}}-landing-to-bronze"
+  namespace: processing
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: "jpedroloureiro/bronze_layer_app:3.0.0"
+  imagePullPolicy: Always
+  mainApplicationFile: "local:///app/bronze_layer_app.py"
+  sparkVersion: "3.1.1"
+  restartPolicy:
+    type: OnFailure
+    onFailureRetries: 3
+    onFailureRetryInterval: 10
+    onSubmissionFailureRetries: 5
+    onSubmissionFailureRetryInterval: 20
+  driver:
+    # cores: 0.2
+    coreRequest: "200m"
+    coreLimit: "250m"
+    memory: "500m"
+    labels:
+      version: 3.1.1
+    serviceAccount: spark-operator-spark
+    envVars:
+      APP_TABLE_NAME: "{{app_table_name}}" # app-table-name
+      TABLE_NAME: "{{table_name}}" # table_name
+      FULL_TABLE_NAME: "{{full_table_name}}" # db.schema.table_name
+  executor:
+    instances: 1
+    # cores: 0.2
+    coreRequest: "200m"
+    coreLimit: "250m"
+    memory: "500m"
+    labels:
+      version: 3.1.1

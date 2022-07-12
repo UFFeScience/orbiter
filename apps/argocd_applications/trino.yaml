@@ -1,0 +1,86 @@
+apiVersion: "argoproj.io/v1alpha1"
+kind: Application
+metadata:
+  name: trino
+  namespace: cicd
+spec:
+  project: big-data-on-k8s
+  source:
+    repoURL: https://valeriano-manassero.github.io/helm-charts
+    chart: trino
+    targetRevision: 2.0.0
+    helm:
+      version: v3
+      values: |
+        ingress:
+          enabled: true
+          annotations: {
+              kubernetes.io/ingress.class: nginx,
+              nginx.ingress.kubernetes.io/rewrite-target: /,
+              cert-manager.io/cluster-issuer: lets-encrypt-cluster-issuer,
+            }
+          host: "trino.tcc.bigdataonk8s.com"
+          tls:
+            secretName: "trino-tls-secret"
+        config:
+          workers:
+            replicas: 1
+            jvm:
+              maxHeapSize: "3G"
+          coordinator:
+            replicas: 1
+        connectors:
+          # Connectors configuration usually contains sensitive data (like passwords, usernames, ...)
+          # so data is stored in a secret
+          postgresql.properties: |-
+            connector.name=postgresql
+            connection-url=jdbc:postgresql://my-postgresql.data-generator:5432/ifood
+            connection-user=ifood_app
+            connection-password=ifood123
+          kafka.properties: |-
+            connector.name=kafka
+            kafka.table-names=src_data_generator_postgres.public.orders,src_data_generator_postgres.public.products,src_data_generator_postgres.public.restaurants,src_data_generator_postgres.public.users,src_data_generator_postgres.public.order_products
+            kafka.nodes=kafka-cluster.ingestion:9092
+            kafka.hide-internal-columns=false
+          #  kafka.confluent-schema-registry-url=http://schema-registry:8081
+          delta_lake.properties: |-
+            connector.name=delta-lake
+            hive.metastore.uri=thrift://hive-metastore.data-exploration.svc.cluster.local:9083
+            hive.s3.endpoint=http://minio.datalake.svc.cluster.local:9000
+            hive.s3.aws-access-key=T11ZDXNGN4MCJF2PZ393
+            hive.s3.aws-secret-key=gvrgSv49v4ZPgBqnOPQFh3iR7rxti+iEC8WOWM10
+            hive.s3.path-style-access=true
+            # hive.s3.ssl.enabled=false
+            # hive.s3select-pushdown.enabled=true
+            # hive.s3.multipart.min-file-size=5GB
+            # hive.s3.multipart.min-part-size=5GB
+            # hive.s3.max-connections=5000
+            # hive.allow-add-column=true
+            # hive.allow-drop-column=true
+            # hive.allow-drop-table=true
+            # hive.allow-rename-table=true
+            # hive.allow-rename-column=true
+          hive_metastore.properties: |-
+            connector.name=mysql
+            connection-url=jdbc:mysql://mariadb.data-exploration.svc.cluster.local:3306
+            connection-user=admin
+            connection-password=admin
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: data-exploration
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - "Validate=false"
+      - "CreateNamespace=true"
+      - "PrunePropagationPolicy=foreground"
+      - "PruneLast=true"
+    retry:
+      limit: 3
+      backoff:
+        duration   : "5s"
+        factor     : 2
+        maxDuration: "1m"

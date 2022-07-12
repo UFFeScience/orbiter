@@ -1,0 +1,47 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: sink-s3
+  labels:
+    # The strimzi.io/cluster label identifies the KafkaConnect instance
+    # in which to create this connector. That KafkaConnect instance
+    # must have the strimzi.io/use-connector-resources annotation
+    # set to true.
+    strimzi.io/cluster: kafka-connect
+spec:
+  class: io.confluent.connect.s3.S3SinkConnector
+  tasksMax: 1
+  config:
+    key.converter: "io.confluent.connect.avro.AvroConverter"
+    key.converter.schema.registry.url: "http://schema-registry:8081"
+    value.converter: "io.confluent.connect.avro.AvroConverter"
+    value.converter.schema.registry.url: "http://schema-registry:8081"
+    topics: "acidentes_antt"
+      # src_data_generator_postgres.public.orders,
+      # src_data_generator_postgres.public.products,
+      # src_data_generator_postgres.public.restaurants,
+      # src_data_generator_postgres.public.users,
+      # src_data_generator_postgres.public.order_products
+    s3.region: "us-east-1"
+    s3.bucket.name: "datalake"
+    topics.dir: "landing-zone"
+    s3.part.size: 5242880
+    flush.size: 100000  # Records per file
+    rotate.schedule.interval.ms: 120000
+    store.url: "http://minio.datalake.svc.cluster.local:9000/"
+    aws.access.key.id: "T11ZDXNGN4MCJF2PZ393"
+    aws.secret.access.key: "gvrgSv49v4ZPgBqnOPQFh3iR7rxti+iEC8WOWM10"
+    storage.class: "io.confluent.connect.s3.storage.S3Storage"
+    format.class: "io.confluent.connect.s3.format.parquet.ParquetFormat"
+    # format.class: "io.confluent.connect.s3.format.json.JsonFormat"    
+    enhanced.avro.schema.support: True
+    schema.generator.class: "io.confluent.connect.storage.hive.schema.DefaultSchemaGenerator"
+    partitioner.class: "io.confluent.connect.storage.partitioner.TimeBasedPartitioner"
+    path.format: "YYYY/MM/dd/HH"
+    locale: "pt_BR"
+    timezone: "America/Sao_Paulo"
+    partition.duration.ms: 18000
+    timestamp.extractor: "Record"
+    s3.part.retries: 10
+    s3.retry.backoff.ms: 900
+    # schema.compatibility: "NONE"

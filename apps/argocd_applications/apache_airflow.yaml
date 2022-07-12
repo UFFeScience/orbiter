@@ -1,0 +1,104 @@
+apiVersion: "argoproj.io/v1alpha1"
+kind: Application
+metadata:
+  name: apache-airflow
+  namespace: cicd
+spec:
+  project: big-data-on-k8s
+  source:
+    repoURL: https://airflow.apache.org/
+    targetRevision: 1.6.0
+    chart: airflow
+    helm:
+      version: v3
+      values: |
+        images:
+          airflow:
+            repository: jpedroloureiro/custom-apache-airflow
+            tag: 1.0.0
+            pullPolicy: Always
+        createUserJob:
+          useHelmHooks: false
+        migrateDatabaseJob:
+          useHelmHooks: false
+        workers:
+          replicas: 1
+          persistence:
+            size: 8Gi
+          resources: 
+            limits:
+              cpu: 1000m
+              memory: 3Gi
+            requests:
+              cpu: 500m
+              memory: 2Gi
+        scheduler:
+          replicas: 1
+          resources: 
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 200m
+              memory: 1Gi
+        webserver:
+          replicas: 1
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 3Gi
+            requests:
+              cpu: 1500m
+              memory: 3Gi
+          defaultUser:
+            password: bigdataonk8s
+        dags:
+          gitSync:
+            enabled: true
+            repo: https://github.com/JPedro-loureiro/big_data_k8s.git
+            branch: main
+            depth: 0
+            subPath: "apps/orchestration/airflow/dags"
+            wait: 30
+        ingress:
+          web:
+            enabled: true
+            annotations:
+              kubernetes.io/ingress.class: "nginx"
+              nginx.ingress.kubernetes.io/rewrite-target: "/"
+              cert-manager.io/cluster-issuer: "lets-encrypt-cluster-issuer"
+            path: "/"
+            hosts: [
+              airflow.tcc.bigdataonk8s.com,
+            ]
+            tls:
+              enabled: true
+              secretName: "airflow-tls-secret"
+        secret: 
+          - envName: "AIRFLOW_CONN_KUBERNETES_CLUSTER"
+            secretName: "kubernetes-cluster-conn"
+            secretKey: "AIRFLOW_CONN_KUBERNETES_CLUSTER"
+        extraSecrets:
+          kubernetes-cluster-conn:
+            data: |
+              AIRFLOW_CONN_KUBERNETES_CLUSTER: 'a3ViZXJuZXRlczovLz9fX2V4dHJhX189JTdCJTIyZXh0cmFfX2t1YmVybmV0ZXNfX2luX2NsdXN0ZXIlMjIlM0ErdHJ1ZSU3RAo='
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: orchestration
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - "Validate=false"
+      - "CreateNamespace=true"
+      - "PrunePropagationPolicy=foreground"
+      - "PruneLast=true"
+    retry:
+      limit: 3
+      backoff:
+        duration   : "5s"
+        factor     : 2
+        maxDuration: "1m"

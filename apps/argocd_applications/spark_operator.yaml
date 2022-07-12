@@ -1,0 +1,35 @@
+apiVersion: "argoproj.io/v1alpha1"
+kind: Application
+metadata:
+  name: spark-operator
+  namespace: cicd
+spec:
+  project: big-data-on-k8s
+  source:
+    repoURL: https://googlecloudplatform.github.io/spark-on-k8s-operator
+    targetRevision: 1.1.21
+    chart: spark-operator
+    helm:
+      version: v3
+      # parameters:
+      #   - name: "sparkJobNamespace"
+      #     value: "processing"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: processing
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - "Validate=false"
+      - "CreateNamespace=true"
+      - "PrunePropagationPolicy=foreground"
+      - "PruneLast=true"
+    retry:
+      limit: 3
+      backoff:
+        duration   : "5s"
+        factor     : 2
+        maxDuration: "1m"

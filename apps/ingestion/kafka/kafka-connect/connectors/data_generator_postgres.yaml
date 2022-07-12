@@ -1,0 +1,36 @@
+# apiVersion: kafka.strimzi.io/v1beta2
+# kind: KafkaConnector
+# metadata:
+#   name: src-data-generator-postgres
+#   labels:
+#     # The strimzi.io/cluster label identifies the KafkaConnect instance
+#     # in which to create this connector. That KafkaConnect instance
+#     # must have the strimzi.io/use-connector-resources annotation
+#     # set to true.
+#     strimzi.io/cluster: kafka-connect
+# spec:
+#   class: io.debezium.connector.postgresql.PostgresConnector
+#   tasksMax: 1
+#   config:
+#     name: "src-data-generator-postgres"
+#     database.hostname: "my-postgresql.data-generator"
+#     database.port: 5432
+#     database.user: "postgres"
+#     database.password: "adminpassword"
+#     database.dbname: "ifood"
+#     database.server.name: "src_data_generator_postgres"
+#     plugin.name: "pgoutput"
+#     # Schema registry
+#     key.converter.schema.registry.url: "http://schema-registry:8081"
+#     value.converter.schema.registry.url: "http://schema-registry:8081"
+#     key.converter: "io.confluent.connect.avro.AvroConverter"
+#     value.converter: "io.confluent.connect.avro.AvroConverter"
+#     # auto.create: true
+#     # auto.evolve: true
+#     # include.schema.changes: true
+#     # SMT
+#     transforms: "unwrap"
+#     transforms.unwrap.type: "io.debezium.transforms.ExtractNewRecordState"
+#     transforms.unwrap.drop.tombstones: "false"
+#     transforms.unwrap.delete.handling.mode: "rewrite"
+#     transforms.unwrap.add.fields: "op,db,table,schema,source.ts_ms"

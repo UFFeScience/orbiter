@@ -1,0 +1,52 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hive-metastore
+spec:
+  ports:
+  - port: 9083
+  selector:
+    app: hive-metastore
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hive-metastore
+  labels:
+    app: hive-metastore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hive-metastore
+  template:
+    metadata:
+      labels:
+        app: hive-metastore
+    spec:
+      containers:
+      - name: hive-metastore
+        image: jpedroloureiro/hive-metastore:1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9083
+        # resources:
+        #   requests:
+        #     memory: "500m"
+        #     cpu: "250m"
+        #   limits:
+        #     memory: "1000m"
+        #     cpu: "750m"
+        env:
+          - name: METASTORE_DB_HOSTNAME
+            value: mariadb
+        volumeMounts:
+          - name: metastore-site
+            mountPath: /opt/apache-hive-metastore-3.0.0-bin/conf/metastore-site.xml
+            subPath: metastore-site.xml
+            readOnly: true
+      volumes:
+        - name: metastore-site
+          configMap:
+            name: metastore-site

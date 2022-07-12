@@ -1,0 +1,30 @@
+apiVersion: "argoproj.io/v1alpha1"
+kind: Application
+metadata:
+  name: kafka-connectors
+  namespace: cicd
+spec:
+  project: big-data-on-k8s
+  source:
+    repoURL: https://github.com/JPedro-loureiro/big_data_k8s
+    targetRevision: HEAD
+    path: apps/ingestion/kafka/kafka-connect/connectors
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ingestion
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - "Validate=false"
+      - "CreateNamespace=true"
+      - "PrunePropagationPolicy=foreground"
+      - "PruneLast=true"
+    retry:
+      limit: 3
+      backoff:
+        duration   : "5s"
+        factor     : 2
+        maxDuration: "1m"

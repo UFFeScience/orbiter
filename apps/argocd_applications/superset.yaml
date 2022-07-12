@@ -1,0 +1,56 @@
+apiVersion: "argoproj.io/v1alpha1"
+kind: Application
+metadata:
+  name: superset
+  namespace: cicd
+spec:
+  project: big-data-on-k8s
+  source:
+    repoURL: https://apache.github.io/superset
+    chart: superset
+    targetRevision: 0.6.2
+    helm:
+      version: v3
+      values: |
+        replicaCount: 1
+        image:
+          repository: jpedroloureiro/apache-superset
+          tag: 1.0.0
+          pullPolicy: Always
+        init:
+          adminUser:
+            password: bigdataonk8s
+        ingress:
+          enabled: true
+          annotations: {
+              kubernetes.io/ingress.class: nginx,
+              nginx.ingress.kubernetes.io/rewrite-target: /,
+              cert-manager.io/cluster-issuer: lets-encrypt-cluster-issuer,
+            }
+          hosts:
+            - superset.tcc.bigdataonk8s.com
+          tls:
+            - secretName: superset-tls-secret
+              hosts:
+                - superset.tcc.bigdataonk8s.com
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dataviz
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - "Validate=false"
+      - "CreateNamespace=true"
+      - "PrunePropagationPolicy=foreground"
+      - "PruneLast=true"
+    retry:
+      limit: 3
+      backoff:
+        duration   : "5s"
+        factor     : 2
+        maxDuration: "1m"
+
+# trino://trino@trino.data-exploration.svc.cluster.local:8080

@@ -1,0 +1,32 @@
+apiVersion: "argoproj.io/v1alpha1"
+kind: Application
+metadata:
+  name: strimzi-operator
+  namespace: cicd
+spec:
+  project: big-data-on-k8s
+  source:
+    repoURL: https://strimzi.io/charts
+    targetRevision: 0.26.0
+    chart: strimzi-kafka-operator
+    helm:
+      version: v3
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ingestion
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - "Validate=false"
+      - "CreateNamespace=true"
+      - "PrunePropagationPolicy=foreground"
+      - "PruneLast=true"
+    retry:
+      limit: 3
+      backoff:
+        duration   : "5s"
+        factor     : 2
+        maxDuration: "1m"
