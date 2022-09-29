@@ -1,7 +1,7 @@
 #################### Generic variables ####################
 
 region         = "eastus"
-env            = "tcc"
+env            = "ambev"
 k8s_version    = "1.21.7"
 main_node_type = "standard_b2s" #standard_b2s
 kubeconfig_path = "/home/joao-loureiro/.kube/config"

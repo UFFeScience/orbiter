@@ -19,7 +19,7 @@ spec:
               nginx.ingress.kubernetes.io/rewrite-target: /,
               cert-manager.io/cluster-issuer: lets-encrypt-cluster-issuer,
             }
-          host: "trino.tcc.bigdataonk8s.com"
+          host: "trino.ambev.bigdataonk8s.com"
           tls:
             secretName: "trino-tls-secret"
         config:

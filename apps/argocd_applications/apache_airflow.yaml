@@ -69,7 +69,7 @@ spec:
               cert-manager.io/cluster-issuer: "lets-encrypt-cluster-issuer"
             path: "/"
             hosts: [
-              airflow.tcc.bigdataonk8s.com,
+              airflow.ambev.bigdataonk8s.com,
             ]
             tls:
               enabled: true

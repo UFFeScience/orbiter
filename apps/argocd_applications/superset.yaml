@@ -28,11 +28,11 @@ spec:
               cert-manager.io/cluster-issuer: lets-encrypt-cluster-issuer,
             }
           hosts:
-            - superset.tcc.bigdataonk8s.com
+            - superset.ambev.bigdataonk8s.com
           tls:
             - secretName: superset-tls-secret
               hosts:
-                - superset.tcc.bigdataonk8s.com
+                - superset.ambev.bigdataonk8s.com
   destination:
     server: https://kubernetes.default.svc
     namespace: dataviz

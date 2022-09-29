@@ -23,12 +23,12 @@ spec:
           type: tls
         configuration:
           bootstrap:
-            host: kafka-bootstrap.tcc.bigdataonk8s.com
+            host: kafka-bootstrap.ambev.bigdataonk8s.com
             annotations:
               kubernetes.io/ingress.class: nginx
           brokers:
           - broker: 0
-            host: kafka-broker-0.tcc.bigdataonk8s.com
+            host: kafka-broker-0.ambev.bigdataonk8s.com
             annotations:
               kubernetes.io/ingress.class: nginx
     config:

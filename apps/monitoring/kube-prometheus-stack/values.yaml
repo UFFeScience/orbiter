@@ -680,7 +680,7 @@ grafana:
     # hosts:
     #   - grafana.domain.com
     hosts: 
-      - grafana.tcc.bigdataonk8s.com
+      - grafana.ambev.bigdataonk8s.com
 
     ## Path for grafana ingress
     path: /
@@ -691,7 +691,7 @@ grafana:
     tls: 
         - secretName: grafana-tls-secret
           hosts: 
-            - grafana.tcc.bigdataonk8s.com
+            - grafana.ambev.bigdataonk8s.com
     # - secretName: grafana-general-tls
     #   hosts:
     #   - grafana.example.com
